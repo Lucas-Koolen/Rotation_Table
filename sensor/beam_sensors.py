@@ -1,4 +1,4 @@
-from serial.arduino_comm import ArduinoComm
+from arduino_comm.arduino_comm import ArduinoComm
 
 def parse_beams(response):
     # Voorbeeld response: "b10 b21"
