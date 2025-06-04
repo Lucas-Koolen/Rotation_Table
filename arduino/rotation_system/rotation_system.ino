@@ -40,7 +40,8 @@ void setup() {
     Serial.println("VL53L1X niet gevonden!");
     while (1);
   }
-  vl53.setDistanceMode(VL53L1X::LONG);
+  // Zet de sensor in 'long range' modus
+  vl53.VL53L1X_SetDistanceMode(2); // 2 = long
   vl53.setTimingBudget(50);
   vl53.startRanging();
 
@@ -74,9 +75,9 @@ void handleCommand(String cmd) {
   if (cmd.startsWith("SET")) {
     int s = cmd.substring(4, 5).toInt();
     String dir = cmd.substring(6, 9);
-    int pwm = cmd.substring(10).toInt();
-    if (dir == "FWD") pwm.setPWM(s, 0, SERVO_MIN + pwm);
-    else if (dir == "REV") pwm.setPWM(s, 0, SERVO_MIN + (4096 - pwm));
+    int pwmVal = cmd.substring(10).toInt();
+    if (dir == "FWD") pwm.setPWM(s, 0, SERVO_MIN + pwmVal);
+    else if (dir == "REV") pwm.setPWM(s, 0, SERVO_MIN + (4096 - pwmVal));
     else pwm.setPWM(s, 0, SERVO_MIN + 365); // stop
   }
 
@@ -113,10 +114,15 @@ void handleCommand(String cmd) {
   }
 
   else if (cmd == "GET HEIGHT") {
-    VL53L1X_Result_t result;
-    if (vl53.read(true, &result)) {
-      Serial.print("HEIGHT: ");
-      Serial.println(result.distance);
+    if (vl53.dataReady()) {
+      int16_t distance = vl53.distance();
+      if (distance != -1) {
+        Serial.print("HEIGHT: ");
+        Serial.println(distance);
+      } else {
+        Serial.println("HEIGHT: ERROR");
+      }
+      vl53.clearInterrupt();
     } else {
       Serial.println("HEIGHT: ERROR");
     }
