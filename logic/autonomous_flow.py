@@ -1,7 +1,7 @@
 from logic.camera_module import detect_box_dimensions, convert_frame_to_opencv
 from logic.box_identifier import identify_box
 from logic.orientation_solver import solve_orientation
-from serial.arduino_comm import send_rotation_command
+from serial_comm.arduino_comm import send_rotation_command
 from ui.dashboard import update_dashboard_status
 
 # Wordt ingesteld vanuit main
