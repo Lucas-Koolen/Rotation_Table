@@ -45,16 +45,46 @@ def init_camera():
     return cam
 
 
-def capture_frame(cam):
-    data_buf = None
-    stFrameInfo = MV_FRAME_OUT_INFO_EX()
-    ret, data_buf, stFrameInfo = cam.MV_CC_GetOneFrameTimeout(2000)
+def get_frame_tuple(cam, timeout=2000):
+    """Retrieve a single frame from ``cam`` using the Hikvision SDK.
 
+    Parameters
+    ----------
+    cam : ``MvCamera``
+        Open camera handle.
+    timeout : int, optional
+        Timeout in milliseconds, by default ``2000``.
+
+    Returns
+    -------
+    tuple
+        ``(ret, data_buf, frame_info)`` where ``ret`` is the SDK return code and
+        ``data_buf`` is a ``bytes`` object with the raw image. ``frame_info`` is
+        the filled ``MV_FRAME_OUT_INFO_EX`` structure. If grabbing fails,
+        ``data_buf`` and ``frame_info`` are ``None``.
+    """
+
+    n_data_size = FRAME_WIDTH * FRAME_HEIGHT * 3
+    data_buf = (c_ubyte * n_data_size)()
+    frame_info = MV_FRAME_OUT_INFO_EX()
+
+    ret = cam.MV_CC_GetOneFrameTimeout(data_buf, n_data_size, frame_info, timeout)
+    if ret != 0:
+        return ret, None, None
+
+    # Convert to bytes to decouple from the underlying buffer
+    return ret, bytes(data_buf[: frame_info.nFrameLen]), frame_info
+
+
+def capture_frame(cam):
+    """Return the next frame from ``cam`` as an OpenCV ``numpy`` array."""
+
+    ret, data_buf, frame_info = get_frame_tuple(cam)
     if ret != 0 or data_buf is None:
         return None
 
     frame = np.frombuffer(data_buf, dtype=np.uint8)
-    frame = frame.reshape((stFrameInfo.nHeight, stFrameInfo.nWidth, 3))
+    frame = frame.reshape((frame_info.nHeight, frame_info.nWidth, 3))
     return frame.copy()
 
 
