@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
 )
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPixmap, QImage
 import cv2
 
@@ -21,6 +21,38 @@ class LiveFeedDashboard(QWidget):
         super().__init__()
         self.setWindowTitle("Rotation System – Autonome Cycle")
         self.setGeometry(100, 100, 1200, 800)
+
+        self.setStyleSheet(
+            """
+            QWidget {
+                font-family: 'Segoe UI', sans-serif;
+                font-size: 14px;
+            }
+            QTextEdit {
+                background-color: #f8f8f8;
+                border: 1px solid #ccc;
+            }
+            QPushButton {
+                background-color: #007ACC;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #005a9e;
+            }
+            QLabel#titleLabel {
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+            """
+        )
+
+        self.title_label = QLabel("Rotation System – Autonome Cycle")
+        self.title_label.setObjectName("titleLabel")
+        self.title_label.setAlignment(Qt.AlignCenter)
 
         # Cameravenster
         self.image_label = QLabel()
@@ -35,17 +67,27 @@ class LiveFeedDashboard(QWidget):
         # Statuslogs
         self.status_output = QTextEdit()
         self.status_output.setReadOnly(True)
-        self.status_output.setStyleSheet("font-family: Consolas; font-size: 12px;")
+        self.status_output.setStyleSheet(
+            "font-family: 'Consolas', monospace; font-size: 12px;"
+        )
 
         # Layout
         right_layout = QVBoxLayout()
-        right_layout.addWidget(QLabel("System Logs"))
+        logs_label = QLabel("System Logs")
+        logs_label.setAlignment(Qt.AlignCenter)
+        right_layout.addWidget(logs_label)
         right_layout.addWidget(self.status_output)
+        right_layout.addStretch()
         right_layout.addWidget(self.start_button)
 
-        main_layout = QHBoxLayout()
-        main_layout.addWidget(self.image_label)
-        main_layout.addLayout(right_layout)
+        content_layout = QHBoxLayout()
+        content_layout.addWidget(self.image_label)
+        content_layout.addLayout(right_layout)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.title_label)
+        main_layout.addLayout(content_layout)
+        main_layout.setContentsMargins(20, 20, 20, 20)
 
         self.setLayout(main_layout)
 
