@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 # script directly (e.g. ``python main/main.py``).  This allows imports of
 # top-level packages such as ``ui`` to succeed regardless of the current
 # working directory.
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from ui.dashboard import LiveFeedDashboard
 
