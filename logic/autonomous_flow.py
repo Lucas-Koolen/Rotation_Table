@@ -3,8 +3,6 @@ from logic.box_identifier import identify_box
 from logic.orientation_solver import solve_orientation
 from serial.arduino_comm import send_rotation_command
 from ui.dashboard import update_dashboard_status
-from sensor.height_sensor import HeightSensorReader
-from config.config import ROTATE_LOGIC_VERBOSE
 
 # Wordt ingesteld vanuit main
 CAMERA = None

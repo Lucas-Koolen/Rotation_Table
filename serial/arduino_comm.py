@@ -37,3 +37,27 @@ class ArduinoComm:
     def close(self):
         if self.ser:
             self.ser.close()
+
+
+def send_rotation_command(angle, flip="none"):
+    """Stuur een rotatiecommando naar de Arduino.
+
+    Parameters
+    ----------
+    angle : float or int
+        Hoek in graden voor servo-kanaal 0.
+    flip : str, optional
+        Type flip, standaard ``"none"``. Wordt alleen gelogd.
+    """
+
+    arduino = ArduinoComm()
+    if not arduino.ser:
+        return None
+
+    response = arduino.send_command(f"ROTATE 0 {int(angle)}")
+
+    if flip and flip.lower() != "none":
+        arduino.send_command(f"# Flip not supported: {flip}")
+
+    arduino.close()
+    return response

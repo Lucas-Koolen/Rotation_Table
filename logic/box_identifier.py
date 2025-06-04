@@ -1,5 +1,5 @@
 from database.sql_interface import get_all_boxes
-from config.config import MATCH_TOLERANCE_LB, MATCH_TOLERANCE_H, WEIGHTS
+from config.config import MATCH_TOLERANCE_LB, WEIGHTS
 
 def identify_box(measured_length, measured_width, measured_height):
     # Herken vorm op basis van verhouding lengte/breedte
