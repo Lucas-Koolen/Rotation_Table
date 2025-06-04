@@ -20,6 +20,19 @@ def init_camera():
         print("[CAMERA] Geen camera gevonden.")
         return None
 
+    # Print info about all detected cameras to aid troubleshooting
+    for i in range(deviceList.nDeviceNum):
+        dev_info = deviceList.pDeviceInfo[i].contents
+        if dev_info.nTLayerType == MV_GIGE_DEVICE:
+            info = dev_info.SpecialInfo.stGigEInfo
+        else:
+            info = dev_info.SpecialInfo.stUsb3VInfo
+
+        model = bytes(info.chModelName).split(b"\x00", 1)[0].decode(errors="ignore")
+        serial = bytes(info.chSerialNumber).split(b"\x00", 1)[0].decode(errors="ignore")
+        version = bytes(info.chDeviceVersion).split(b"\x00", 1)[0].decode(errors="ignore")
+        print(f"[CAMERA] Device {i}: {model} SN={serial} Version={version}")
+
     cam = MvCamera()
     cam.MV_CC_CreateHandle(deviceList.pDeviceInfo[0])
     cam.MV_CC_OpenDevice()
