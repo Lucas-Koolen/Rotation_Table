@@ -14,18 +14,23 @@ import cv2
 
 import logic.autonomous_flow as autonomous_flow
 from logic.autonomous_flow import run_autonomous_cycle
-from logic.camera_module import convert_frame_to_opencv, init_camera, get_frame_tuple
+from utils.image_utils import convert_frame_to_opencv, get_frame_tuple
+from logic.camera_module import enum_cameras, open_camera
 from sensor.height_sensor import HeightSensorReader
 
 
 class LiveFeedDashboard(QWidget):
     def __init__(self):
         super().__init__()
-        # Initialize camera and height sensor once
+
+        # Initialiseer camera en hoogte sensor
         if autonomous_flow.CAMERA is None:
-            autonomous_flow.CAMERA = init_camera()
+            devices = enum_cameras()
+            autonomous_flow.CAMERA = open_camera(devices.pDeviceInfo[0]) if devices else None
+
         if autonomous_flow.HEIGHT_READER is None:
             autonomous_flow.HEIGHT_READER = HeightSensorReader()
+
         self.setWindowTitle("Rotation System – Autonome Cycle")
         self.setGeometry(100, 100, 1200, 800)
 
@@ -61,24 +66,20 @@ class LiveFeedDashboard(QWidget):
         self.title_label.setObjectName("titleLabel")
         self.title_label.setAlignment(Qt.AlignCenter)
 
-        # Cameravenster
         self.image_label = QLabel()
         self.image_label.setFixedSize(800, 600)
         self.image_label.setStyleSheet("border: 2px solid gray")
 
-        # Startknop
         self.start_button = QPushButton("Start Cycle")
         self.start_button.setFixedHeight(40)
         self.start_button.clicked.connect(self.run_cycle)
 
-        # Statuslogs
         self.status_output = QTextEdit()
         self.status_output.setReadOnly(True)
         self.status_output.setStyleSheet(
             "font-family: 'Consolas', monospace; font-size: 12px;"
         )
 
-        # Layout
         right_layout = QVBoxLayout()
         logs_label = QLabel("System Logs")
         logs_label.setAlignment(Qt.AlignCenter)
@@ -98,7 +99,6 @@ class LiveFeedDashboard(QWidget):
 
         self.setLayout(main_layout)
 
-        # Live camerafeed
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_camera_frame)
         self.timer.start(100)
@@ -109,19 +109,17 @@ class LiveFeedDashboard(QWidget):
     def update_camera_frame(self):
         if autonomous_flow.CAMERA is None:
             return
-        frame_tuple = get_frame_tuple(autonomous_flow.CAMERA)
-        if not frame_tuple or frame_tuple[1] is None:
+        frame, _ = get_frame_tuple(autonomous_flow.CAMERA)
+        if frame is None:
             return
-        image = convert_frame_to_opencv(frame_tuple)
-        if image is not None:
-            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            h, w, ch = rgb_image.shape
-            bytes_per_line = ch * w
-            q_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            self.image_label.setPixmap(QPixmap.fromImage(q_image))
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        q_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        self.image_label.setPixmap(QPixmap.fromImage(q_image))
 
 
-# Globale referentie om logstatus te kunnen bijwerken
+# Globale referentie voor externe statusupdates
 DASHBOARD_INSTANCE = None
 
 
