@@ -2,13 +2,13 @@ from logic.camera_module import detect_box_dimensions, convert_frame_to_opencv
 from logic.box_identifier import identify_box
 from logic.orientation_solver import solve_orientation
 from arduino_comm.arduino_comm import send_rotation_command
-from ui.dashboard import update_dashboard_status
 
 # Wordt ingesteld vanuit main
 CAMERA = None
 HEIGHT_READER = None
 
 def run_autonomous_cycle():
+    from ui.dashboard import update_dashboard_status
     print("=== ROTATION SYSTEM: AUTONOME CYCLE START ===")
     update_dashboard_status("Wachten op boxdetectie...")
 
