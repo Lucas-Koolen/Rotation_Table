@@ -1,6 +1,6 @@
 from logic.camera_module import detect_box_dimensions
 from logic.box_identifier import identify_box
-from logic.orientation_solver import determine_rotation_strategy
+from logic.orientation_solver import solve_orientation
 from serial.arduino_comm import send_rotation_command
 from ui.dashboard import update_dashboard_status
 from sensor.height_sensor import HeightSensorReader
@@ -41,7 +41,10 @@ def run_autonomous_cycle():
     update_dashboard_status(f"Match gevonden:\nCommonId={common_id}\n{dims['length']}x{dims['width']}x{dims['height']} mm")
 
     # Bepaal benodigde rotatie
-    rotation, flip, uitleg = determine_rotation_strategy(dims, box_info)
+    orientation = solve_orientation(dims, box_info["matched_dims"], shape)
+    rotation = orientation["rotation_angle"]
+    flip = orientation["flip"]
+    uitleg = orientation["info"]
     print(f"[FLOW] Rotatie nodig: {rotation}°, Flip: {flip}")
     print(f"[FLOW] Uitleg: {uitleg}")
 
