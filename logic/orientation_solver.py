@@ -35,3 +35,6 @@ def solve_orientation(measured_dims, matched_dims, shape):
         "flip": flip,
         "info": " | ".join(uitleg)
     }
+
+# Backwards compatibility for older imports
+determine_rotation_strategy = solve_orientation
