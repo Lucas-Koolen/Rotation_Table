@@ -1,8 +1,16 @@
 import cv2
 import numpy as np
 from hikvision_sdk.MvCameraControl_class import *
-from config.config import FRAME_WIDTH, FRAME_HEIGHT, PIXEL_FORMAT, EXPOSURE_TIME, GAIN, MM_PER_PIXEL
+from config.config import (
+    FRAME_WIDTH,
+    FRAME_HEIGHT,
+    PIXEL_FORMAT,
+    EXPOSURE_TIME,
+    GAIN,
+    MM_PER_PIXEL,
+)
 from sensor.height_sensor import HeightSensorReader
+
 
 def init_camera():
     deviceList = MV_CC_DEVICE_INFO_LIST()
@@ -23,6 +31,7 @@ def init_camera():
     cam.MV_CC_StartGrabbing()
     return cam
 
+
 def capture_frame(cam):
     data_buf = None
     stFrameInfo = MV_FRAME_OUT_INFO_EX()
@@ -34,6 +43,45 @@ def capture_frame(cam):
     frame = np.frombuffer(data_buf, dtype=np.uint8)
     frame = frame.reshape((stFrameInfo.nHeight, stFrameInfo.nWidth, 3))
     return frame.copy()
+
+
+def convert_frame_to_opencv(frame_tuple):
+    """Converts the raw tuple returned by ``MV_CC_GetOneFrameTimeout`` to an
+    OpenCV compatible ``numpy`` array.
+
+    Parameters
+    ----------
+    frame_tuple : tuple or ``numpy`` array
+        Data returned by ``MvCamera.MV_CC_GetOneFrameTimeout``.  Some parts of
+        the code call the SDK method directly which yields ``(ret, data_buf,
+        frame_info)``.  When the frame is already a ``numpy`` array the value is
+        returned unchanged.
+
+    Returns
+    -------
+    ``numpy.ndarray`` or ``None``
+        BGR image or ``None`` when conversion fails.
+    """
+
+    # If the given value already looks like an OpenCV image, return it
+    if isinstance(frame_tuple, np.ndarray):
+        return frame_tuple
+
+    if not isinstance(frame_tuple, tuple) or len(frame_tuple) != 3:
+        return None
+
+    _, data_buf, stFrameInfo = frame_tuple
+
+    if data_buf is None or stFrameInfo is None:
+        return None
+
+    try:
+        frame = np.frombuffer(data_buf, dtype=np.uint8)
+        frame = frame.reshape((stFrameInfo.nHeight, stFrameInfo.nWidth, 3))
+        return frame.copy()
+    except Exception:
+        return None
+
 
 def detect_box_dimensions(frame, height_reader: HeightSensorReader):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -54,5 +102,5 @@ def detect_box_dimensions(frame, height_reader: HeightSensorReader):
     return {
         "length": round(length_mm, 1),
         "width": round(width_mm, 1),
-        "height": round(height_mm, 1) if height_mm else None
+        "height": round(height_mm, 1) if height_mm else None,
     }
