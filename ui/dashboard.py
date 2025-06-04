@@ -14,7 +14,7 @@ import cv2
 
 import logic.autonomous_flow as autonomous_flow
 from logic.autonomous_flow import run_autonomous_cycle
-from logic.camera_module import convert_frame_to_opencv, init_camera
+from logic.camera_module import convert_frame_to_opencv, init_camera, get_frame_tuple
 from sensor.height_sensor import HeightSensorReader
 
 
@@ -109,8 +109,8 @@ class LiveFeedDashboard(QWidget):
     def update_camera_frame(self):
         if autonomous_flow.CAMERA is None:
             return
-        frame_tuple = autonomous_flow.CAMERA.MV_CC_GetOneFrameTimeout(2000)
-        if not frame_tuple:
+        frame_tuple = get_frame_tuple(autonomous_flow.CAMERA)
+        if not frame_tuple or frame_tuple[1] is None:
             return
         image = convert_frame_to_opencv(frame_tuple)
         if image is not None:
