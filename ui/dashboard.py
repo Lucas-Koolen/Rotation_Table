@@ -1,6 +1,12 @@
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QLabel, QPushButton, QTextEdit, QVBoxLayout, QHBoxLayout
+    QApplication,
+    QWidget,
+    QLabel,
+    QPushButton,
+    QTextEdit,
+    QVBoxLayout,
+    QHBoxLayout,
 )
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap, QImage
@@ -8,6 +14,7 @@ import cv2
 
 from logic.autonomous_flow import run_autonomous_cycle, CAMERA
 from logic.camera_module import convert_frame_to_opencv
+
 
 class LiveFeedDashboard(QWidget):
     def __init__(self):
@@ -53,10 +60,10 @@ class LiveFeedDashboard(QWidget):
     def update_camera_frame(self):
         if CAMERA is None:
             return
-        _, raw_frame = CAMERA.MV_CC_GetOneFrameTimeout(2000)
-        if raw_frame is None:
+        frame_tuple = CAMERA.MV_CC_GetOneFrameTimeout(2000)
+        if not frame_tuple:
             return
-        image = convert_frame_to_opencv(raw_frame)
+        image = convert_frame_to_opencv(frame_tuple)
         if image is not None:
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
@@ -64,8 +71,10 @@ class LiveFeedDashboard(QWidget):
             q_image = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
             self.image_label.setPixmap(QPixmap.fromImage(q_image))
 
+
 # Globale referentie om logstatus te kunnen bijwerken
 DASHBOARD_INSTANCE = None
+
 
 def start_dashboard():
     global DASHBOARD_INSTANCE
@@ -74,6 +83,7 @@ def start_dashboard():
     DASHBOARD_INSTANCE = dashboard
     dashboard.show()
     sys.exit(app.exec_())
+
 
 def update_dashboard_status(text):
     if DASHBOARD_INSTANCE:
